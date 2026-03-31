@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+.claude
+tests
+vendor
+node_modules
+*.md
+!INSTALL
+docker-compose*.yml
+Dockerfile
+SECURITY_AUDIT.md
+MIGRATION_PHP81_PLAN.md

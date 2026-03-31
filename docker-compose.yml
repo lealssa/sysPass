@@ -1,0 +1,41 @@
+services:
+  syspass:
+    build: .
+    container_name: syspass-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - syspass-config:/var/www/syspass/app/config
+      - syspass-backup:/var/www/syspass/app/backup
+    environment:
+      - SYSPASS_DB_HOST=syspass-db
+      - SYSPASS_DB_PORT=3306
+      - SYSPASS_DB_NAME=syspass
+      - SYSPASS_DB_USER=syspass
+      - SYSPASS_DB_PASS=changeme
+    depends_on:
+      syspass-db:
+        condition: service_healthy
+
+  syspass-db:
+    image: mariadb:11
+    container_name: syspass-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootchangeme
+      - MYSQL_DATABASE=syspass
+      - MYSQL_USER=syspass
+      - MYSQL_PASSWORD=changeme
+    volumes:
+      - syspass-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  syspass-config:
+  syspass-backup:
+  syspass-db-data:
