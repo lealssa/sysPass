@@ -162,28 +162,34 @@ final class LdapActions
      *
      * @return bool|array
      */
-    protected function getResults($filter, array $attributes = null, $searchBase = null)
+    protected function getResults($filter, ?array $attributes = null, $searchBase = null)
     {
-        $cookie = '';
-        $results = [];
-
         if (empty($searchBase)) {
             $searchBase = $this->ldapParams->getSearchBase();
         }
 
-        do {
-            ldap_control_paged_result(
-                $this->ldapHandler,
-                LdapInterface::PAGE_SIZE,
-                false,
-                $cookie
-            );
+        $cookie = '';
+        $results = [];
 
+        do {
             $searchRes = @ldap_search(
                 $this->ldapHandler,
                 $searchBase,
                 $filter,
-                $attributes
+                $attributes ?? [],
+                0,
+                0,
+                0,
+                LDAP_DEREF_NEVER,
+                [
+                    [
+                        'oid' => LDAP_CONTROL_PAGEDRESULTS,
+                        'value' => [
+                            'size' => LdapInterface::PAGE_SIZE,
+                            'cookie' => $cookie,
+                        ],
+                    ],
+                ]
             );
 
             if (!$searchRes) {
@@ -198,11 +204,8 @@ final class LdapActions
 
             $results = array_merge($results, $entries);
 
-            ldap_control_paged_result_response(
-                $this->ldapHandler,
-                $searchRes,
-                $cookie
-            );
+            ldap_parse_result($this->ldapHandler, $searchRes, $errorCode, $matchedDn, $errorMessage, $referrals, $controls);
+            $cookie = $controls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'] ?? '';
         } while (!empty($cookie) && $entries["count"] > 0);
 
         return $results;

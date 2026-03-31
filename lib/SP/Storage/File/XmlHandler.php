@@ -124,7 +124,7 @@ final class XmlHandler implements XmlFileStorageInterface
                         $nodes[$node->nodeName] = $this->readChildNodes($node->childNodes);
                     }
                 } else {
-                    $val = is_numeric($node->nodeValue) && strpos($node->nodeValue, '.') === false ? (int)$node->nodeValue : $node->nodeValue;
+                    $val = is_numeric($node->nodeValue) && strpos((string)$node->nodeValue, '.') === false ? (int)$node->nodeValue : $node->nodeValue;
 
                     if ($node->nodeName === 'item') {
                         $nodes[] = $val;
@@ -203,7 +203,7 @@ final class XmlHandler implements XmlFileStorageInterface
                 $newNode->setAttribute('class', get_class($value));
                 $newNode->appendChild($this->Dom->createTextNode(base64_encode(serialize($value))));
             } else {
-                $newNode->appendChild($this->Dom->createTextNode(trim($value)));
+                $newNode->appendChild($this->Dom->createTextNode(trim((string)$value)));
             }
 
             $Node->appendChild($newNode);
@@ -252,7 +252,7 @@ final class XmlHandler implements XmlFileStorageInterface
 
             if (is_bool($value)) {
                 $items[$property->getName()] = (int)$value;
-            } elseif (is_numeric($value) && strpos($value, '.') === false) {
+            } elseif (is_numeric($value) && strpos((string)$value, '.') === false) {
                 $items[$property->getName()] = (int)$value;
             } else {
                 $items[$property->getName()] = $value;

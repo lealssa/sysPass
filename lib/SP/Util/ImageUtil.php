@@ -99,7 +99,7 @@ final class ImageUtil
      */
     public function convertText($text)
     {
-        $width = strlen($text) * 10;
+        $width = strlen((string)$text) * 10;
 
         $im = @imagecreatetruecolor($width, 30);
 

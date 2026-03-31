@@ -172,7 +172,8 @@ final class LdapMsAzureAd extends Ldap
             return $server;
         }
 
-        $dnsServerQuery = '_msdcs' . substr($server, strpos($server, '.'));
+        $dotPos = strpos($server, '.');
+        $dnsServerQuery = '_msdcs' . ($dotPos !== false ? substr($server, $dotPos) : '.' . $server);
 
         logger(sprintf('Querying DNS zone: %s', $dnsServerQuery));
 

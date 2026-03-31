@@ -80,7 +80,7 @@ abstract class Cookie
      */
     public final function getCookieData($data, $cypher)
     {
-        if (strpos($data, ';') === false) {
+        if (empty($data) || strpos($data, ';') === false) {
             return false;
         }
 

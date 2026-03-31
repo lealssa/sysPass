@@ -26,7 +26,8 @@ namespace SP\Core\Crypt;
 
 defined('APP_ROOT') || die();
 
-use phpseclib\Crypt\RSA;
+use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib3\Crypt\RSA;
 use SP\Core\Exceptions\SPException;
 use SP\Storage\File\FileException;
 use SP\Storage\File\FileHandler;
@@ -43,10 +44,6 @@ final class CryptPKI
     const PRIVATE_KEY_FILE = CONFIG_PATH . DIRECTORY_SEPARATOR . 'key.pem';
 
     /**
-     * @var RSA
-     */
-    protected $rsa;
-    /**
      * @var FileHandler
      */
     private $publicKeyFile;
@@ -56,14 +53,10 @@ final class CryptPKI
     private $privateKeyFile;
 
     /**
-     * @param RSA $rsa
-     *
      * @throws SPException
      */
-    public function __construct(RSA $rsa)
+    public function __construct()
     {
-        $this->rsa = $rsa;
-
         $this->setUp();
     }
 
@@ -95,10 +88,10 @@ final class CryptPKI
      */
     public function createKeys()
     {
-        $keys = $this->rsa->createKey(self::KEY_SIZE);
+        $privateKey = RSA::createKey(self::KEY_SIZE);
 
-        $this->publicKeyFile->save($keys['publickey']);
-        $this->privateKeyFile->save($keys['privatekey']);
+        $this->privateKeyFile->save($privateKey->toString('PKCS1'));
+        $this->publicKeyFile->save($privateKey->getPublicKey()->toString('PKCS1'));
 
         chmod(CryptPKI::PRIVATE_KEY_FILE, 0600);
     }
@@ -121,10 +114,10 @@ final class CryptPKI
      */
     public function encryptRSA($data)
     {
-        $this->rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
-        $this->rsa->loadKey($this->getPublicKey(), RSA::PUBLIC_FORMAT_PKCS1);
+        $publicKey = PublicKeyLoader::load($this->getPublicKey())
+            ->withPadding(RSA::ENCRYPTION_PKCS1);
 
-        return $this->rsa->encrypt($data);
+        return $publicKey->encrypt($data);
     }
 
     /**
@@ -145,15 +138,19 @@ final class CryptPKI
      *
      * @param string $data los datos a desencriptar
      *
-     * @return string
+     * @return string|false
      * @throws FileException
      */
     public function decryptRSA($data)
     {
-        $this->rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
-        $this->rsa->loadKey($this->getPrivateKey(), RSA::PRIVATE_FORMAT_PKCS1);
+        $privateKey = PublicKeyLoader::load($this->getPrivateKey())
+            ->withPadding(RSA::ENCRYPTION_PKCS1);
 
-        return @$this->rsa->decrypt($data);
+        try {
+            return $privateKey->decrypt($data);
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -175,9 +172,8 @@ final class CryptPKI
      */
     public function getKeySize()
     {
-        $this->rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
-        $this->rsa->loadKey($this->getPrivateKey(), RSA::PRIVATE_FORMAT_PKCS1);
+        $privateKey = PublicKeyLoader::load($this->getPrivateKey());
 
-        return $this->rsa->getSize();
+        return $privateKey->getLength();
     }
 }

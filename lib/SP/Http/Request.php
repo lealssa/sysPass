@@ -321,7 +321,7 @@ final class Request
      */
     public function isJson()
     {
-        return strpos($this->headers->get('Accept'), 'application/json') !== false;
+        return strpos($this->headers->get('Accept') ?? '', 'application/json') !== false;
     }
 
     /**

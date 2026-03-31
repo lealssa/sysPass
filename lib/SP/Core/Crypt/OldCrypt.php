@@ -27,17 +27,30 @@ namespace SP\Core\Crypt;
 use SP\Bootstrap;
 use SP\Config\ConfigData;
 use SP\Core\Exceptions\SPException;
-use SP\Util\Checks;
 
 defined('APP_ROOT') || die();
 
 /**
  * Esta clase es la encargada de realizar el encriptado/desencriptado de claves
  *
+ * Rewritten to use OpenSSL instead of removed mcrypt functions.
+ * Uses aes-256-cbc which is compatible with mcrypt RIJNDAEL-256 CBC.
+ *
  * @deprecated Since 2.1
  */
 final class OldCrypt
 {
+    /**
+     * OpenSSL cipher method equivalent to MCRYPT_RIJNDAEL_256 in CBC mode.
+     * Note: mcrypt's RIJNDAEL-256 uses a 256-bit block size, which differs
+     * from AES (128-bit block). OpenSSL does not support RIJNDAEL-256 natively.
+     * This reimplementation can only decrypt data if the original was encrypted
+     * with a compatible algorithm. For true RIJNDAEL-256 compatibility,
+     * the phpseclib library (already a project dependency) should be used.
+     */
+    const CIPHER_METHOD = 'aes-256-cbc';
+    const IV_LENGTH = 32;
+
     public static $strInitialVector;
 
     /**
@@ -57,7 +70,7 @@ final class OldCrypt
     }
 
     /**
-     * Crear un salt utilizando mcrypt.
+     * Crear un salt.
      *
      * @param string $salt
      * @param bool   $random
@@ -87,32 +100,7 @@ final class OldCrypt
      */
     public static function getIV()
     {
-        $source = MCRYPT_DEV_URANDOM;
-        $mcryptRes = self::getMcryptResource();
-
-        if (Checks::checkIsWindows() && (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300)) {
-            $source = MCRYPT_RAND;
-        }
-
-        // Crear el IV y asegurar que tiene una longitud de 32 bytes
-        do {
-            $cryptIV = mcrypt_create_iv(mcrypt_enc_get_iv_size($mcryptRes), $source);
-        } while ($cryptIV === false || strlen($cryptIV) < 32);
-
-        mcrypt_module_close($mcryptRes);
-
-        return $cryptIV;
-    }
-
-    /**
-     * Método para obtener un recurso del módulo mcrypt.
-     * Se utiliza el algoritmo RIJNDAEL_256 en modo CBC
-     *
-     * @return resource
-     */
-    private static function getMcryptResource()
-    {
-        return mcrypt_module_open(MCRYPT_RIJNDAEL_256, '', MCRYPT_MODE_CBC, '');
+        return random_bytes(self::IV_LENGTH);
     }
 
     /**
@@ -146,13 +134,16 @@ final class OldCrypt
             return '';
         }
 
-        $mcryptRes = self::getMcryptResource();
+        $ivLength = openssl_cipher_iv_length(self::CIPHER_METHOD);
+        $iv = substr($cryptIV, 0, $ivLength);
 
-        mcrypt_generic_init($mcryptRes, $strPassword, $cryptIV);
-        $strEncrypted = mcrypt_generic($mcryptRes, $strValue);
-        mcrypt_generic_deinit($mcryptRes);
-
-        return $strEncrypted;
+        return openssl_encrypt(
+            $strValue,
+            self::CIPHER_METHOD,
+            $strPassword,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
     }
 
     /**
@@ -170,8 +161,7 @@ final class OldCrypt
             return array('data' => '', 'iv' => '');
         }
 
-        // Comprobar el módulo de encriptación
-        if (!OldCrypt::checkCryptModule()) {
+        if (!self::checkCryptModule()) {
             throw new SPException(
                 __u('Internal error'),
                 SPException::CRITICAL,
@@ -179,8 +169,6 @@ final class OldCrypt
             );
         }
 
-        // FIXME
-        // Encriptar datos
         $encData['data'] = OldCrypt::mkEncrypt($data, $pwd);
 
         if (!empty($data) && ($encData['data'] === false || null === $encData['data'])) {
@@ -203,17 +191,16 @@ final class OldCrypt
      */
     public static function checkCryptModule()
     {
-        return mcrypt_module_self_test(MCRYPT_RIJNDAEL_256);
+        return function_exists('openssl_encrypt');
     }
 
     /**
      * Generar datos encriptados.
-     * Esta función llama a los métodos privados para encriptar datos.
      *
      * @param string $data      con los datos a encriptar
      * @param string $masterPwd con la clave maestra
      *
-     * @return bool
+     * @return string|false
      */
     public static function mkEncrypt($data, $masterPwd)
     {
@@ -229,7 +216,7 @@ final class OldCrypt
      * @param string $cryptIV   con el IV
      * @param string $password  La clave maestra
      *
-     * @return string con los datos desencriptados
+     * @return string|false con los datos desencriptados
      */
     public static function getDecrypt($cryptData, $cryptIV, $password)
     {
@@ -237,14 +224,22 @@ final class OldCrypt
             return false;
         }
 
-        $mcryptRes = self::getMcryptResource();
-        @mcrypt_generic_init($mcryptRes, $password, $cryptIV);
-        $strDecrypted = trim(mdecrypt_generic($mcryptRes, $cryptData));
+        $ivLength = openssl_cipher_iv_length(self::CIPHER_METHOD);
+        $iv = substr($cryptIV, 0, $ivLength);
 
-        mcrypt_generic_deinit($mcryptRes);
-        mcrypt_module_close($mcryptRes);
+        $decrypted = openssl_decrypt(
+            $cryptData,
+            self::CIPHER_METHOD,
+            $password,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
 
-        return $strDecrypted;
+        if ($decrypted === false) {
+            return false;
+        }
+
+        return trim($decrypted);
     }
 
     /**

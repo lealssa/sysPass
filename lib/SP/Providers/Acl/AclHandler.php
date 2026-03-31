@@ -94,7 +94,7 @@ final class AclHandler extends Provider implements EventReceiver
      * @return void
      * @since 5.1.0
      */
-    public function update(SplSubject $subject)
+    public function update(SplSubject $subject): void
     {
         $this->updateEvent('update', new Event($subject));
     }

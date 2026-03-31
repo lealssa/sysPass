@@ -76,7 +76,7 @@ final class FileLogHandler extends LoggerBase
      * @throws InvalidClassException
      * @since 5.1.0
      */
-    public function update(SplSubject $subject)
+    public function update(SplSubject $subject): void
     {
         $this->updateEvent('update', new Event($subject));
     }

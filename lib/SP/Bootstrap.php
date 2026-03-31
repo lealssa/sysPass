@@ -51,7 +51,7 @@ use SP\Services\Upgrade\UpgradeUtil;
 use SP\Util\Checks;
 use SP\Util\Filter;
 use SP\Util\VersionUtil;
-use Symfony\Component\Debug\Debug;
+use Symfony\Component\ErrorHandler\Debug;
 use Throwable;
 
 defined('APP_ROOT') || die();

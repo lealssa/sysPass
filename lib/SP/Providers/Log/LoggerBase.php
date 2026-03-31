@@ -114,9 +114,9 @@ abstract class LoggerBase extends Provider implements EventReceiver
     final protected function formatContext($message, $address, $user): array
     {
         return [
-            'message' => trim($message),
-            'user' => trim($user),
-            'address' => trim($address),
+            'message' => trim((string)$message),
+            'user' => trim((string)$user),
+            'address' => trim((string)$address),
             'caller' => getLastCaller(4)
         ];
     }
