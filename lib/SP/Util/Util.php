@@ -158,6 +158,11 @@ final class Util
 
             $process = false;
 
+            $allowedClasses = [$dstClass];
+            if ($srcClass !== null) {
+                $allowedClasses[] = $srcClass;
+            }
+
             if ($match) {
                 foreach ($matches['class'] as $class) {
                     if (!class_exists($class)
@@ -168,7 +173,7 @@ final class Util
                 }
 
                 if ($process === false) {
-                    return unserialize($serialized);
+                    return unserialize($serialized, ['allowed_classes' => $allowedClasses]);
                 }
             }
 
@@ -188,7 +193,7 @@ final class Util
             }
 
             if (preg_match('/a:\d+:{/', $serialized)) {
-                return unserialize($serialized);
+                return unserialize($serialized, ['allowed_classes' => false]);
             }
         }
 
@@ -209,7 +214,10 @@ final class Util
 
         $cast = is_object($cast) ? serialize($cast) : $cast;
 
-        return unserialize(preg_replace('/O:\d+:"[^"]++"/', 'O:' . strlen($class) . ':"' . $class . '"', $cast));
+        return unserialize(
+            preg_replace('/O:\d+:"[^"]++"/', 'O:' . strlen($class) . ':"' . $class . '"', $cast),
+            ['allowed_classes' => [$class]]
+        );
     }
 
     /**

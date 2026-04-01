@@ -47,7 +47,7 @@ final class FileCachePacked extends FileCacheBase
             throw new FileException(sprintf(__('Error while decompressing the file data (%s)'), $this->path->getFile()));
         }
 
-        $data = unserialize($dataUnpacked);
+        $data = unserialize($dataUnpacked, ['allowed_classes' => true]);
 
         if ($data === false) {
             throw new FileException(__('Error while retrieving the data'));

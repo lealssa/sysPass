@@ -236,7 +236,7 @@ final class ApiService extends Service
             Hash::checkHashKey($tokenPass, $this->authTokenData->getHash()) || $this->accessDenied();
 
             /** @var Vault $vault */
-            $vault = unserialize($this->authTokenData->getVault());
+            $vault = unserialize($this->authTokenData->getVault(), ['allowed_classes' => [Vault::class]]);
 
             if ($vault && ($pass = $vault->getData($tokenPass . $this->getParam('authToken')))) {
                 return $pass;

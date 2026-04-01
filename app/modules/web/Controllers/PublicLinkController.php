@@ -154,7 +154,7 @@ final class PublicLinkController extends ControllerBase implements CrudControlle
         $publicLink = $publicLinkId ? $this->publicLinkService->getById($publicLinkId) : new PublicLinkListData();
 
         $this->view->assign('publicLink', $publicLink);
-        $this->view->assign('usageInfo', unserialize($publicLink->getUseInfo()));
+        $this->view->assign('usageInfo', unserialize($publicLink->getUseInfo(), ['allowed_classes' => false]));
         $this->view->assign('accounts', SelectItemAdapter::factory($this->dic->get(AccountService::class)->getForUser())->getItemsFromModelSelected([$publicLink->getItemId()]));
 
         $this->view->assign('nextAction', Acl::getActionRoute(Acl::ACCESS_MANAGE));

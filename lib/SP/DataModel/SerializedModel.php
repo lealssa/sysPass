@@ -54,7 +54,7 @@ trait SerializedModel
                 return Util::unserialize($class, $this->$property);
             }
 
-            return unserialize($this->$property);
+            return unserialize($this->$property, ['allowed_classes' => false]);
         }
 
         throw new NoSuchPropertyException($property);

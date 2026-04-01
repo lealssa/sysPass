@@ -225,7 +225,7 @@ final class AccountController extends ControllerBase implements CrudControllerIn
                 $this->accountService->incrementDecryptCounter($publicLinkData->getItemId());
 
                 /** @var Vault $vault */
-                $vault = unserialize($publicLinkData->getData());
+                $vault = unserialize($publicLinkData->getData(), ['allowed_classes' => [Vault::class]]);
 
                 /** @var AccountExtData $accountData */
                 $accountData = Util::unserialize(AccountExtData::class, $vault->getData($publicLinkService->getPublicLinkKey($publicLinkData->getHash())->getKey()));

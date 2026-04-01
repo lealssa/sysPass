@@ -37,7 +37,9 @@ final class FileCache extends FileCacheBase
      */
     public function load()
     {
-        return unserialize($this->path->checkIsReadable()->readToString());
+        $data = $this->path->checkIsReadable()->readToString();
+
+        return unserialize($data, ['allowed_classes' => true]);
     }
 
     /**

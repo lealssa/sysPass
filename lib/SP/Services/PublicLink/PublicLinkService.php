@@ -296,7 +296,7 @@ final class PublicLinkService extends Service
     public function addLinkView(PublicLinkData $publicLinkData)
     {
         /** @var array $useInfo */
-        $useInfo = unserialize($publicLinkData->getUseInfo());
+        $useInfo = unserialize($publicLinkData->getUseInfo(), ['allowed_classes' => false]);
         $useInfo[] = self::getUseInfo($publicLinkData->getHash(), $this->request);
         $publicLinkData->setUseInfo($useInfo);
 

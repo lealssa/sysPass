@@ -151,7 +151,7 @@ final class TaskService extends Service
         try {
             $this->taskFile = new FileHandler($this->taskDirectory . DIRECTORY_SEPARATOR . $this->taskId . '.task');
             $this->taskFile->checkFileExists();
-            $this->task = unserialize($this->taskFile->readToString());
+            $this->task = unserialize($this->taskFile->readToString(), ['allowed_classes' => [Task::class]]);
 
             return is_object($this->task);
         } catch (FileException $e) {
