@@ -91,7 +91,7 @@ final class CryptPKI
         $privateKey = RSA::createKey(self::KEY_SIZE);
 
         $this->privateKeyFile->save($privateKey->toString('PKCS1'));
-        $this->publicKeyFile->save($privateKey->getPublicKey()->toString('PKCS1'));
+        $this->publicKeyFile->save($privateKey->getPublicKey()->toString('PKCS8'));
 
         chmod(CryptPKI::PRIVATE_KEY_FILE, 0600);
     }

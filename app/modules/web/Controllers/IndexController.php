@@ -48,6 +48,7 @@ final class IndexController extends ControllerBase
         ) {
             $this->router->response()
                 ->redirect('index.php?r=login');
+            return;
         } else {
             $this->dic->get(LayoutHelper::class)->getFullLayout('main', $this->acl);
 

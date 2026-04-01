@@ -141,7 +141,9 @@ final class Bootstrap
             logger('Routing error: ' . $err->getTraceAsString());
 
             /** @var Klein $router */
-            $router->response()->body(__($err_msg));
+            if (!$router->response()->isLocked()) {
+                $router->response()->body(__($err_msg));
+            }
         });
 
         // Manage requests for api module
@@ -238,6 +240,11 @@ final class Bootstrap
                             self::$container->get(InitWeb::class)
                                 ->initialize($controllerName);
                             break;
+                    }
+
+                    // If Init redirected (e.g. to installer), the response is already sent
+                    if ($response->isLocked()) {
+                        return;
                     }
 
                     logger('Routing call: ' . $controllerClass . '::' . $methodName . '::' . print_r($methodParams, true));
