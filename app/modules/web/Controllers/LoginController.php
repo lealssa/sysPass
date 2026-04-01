@@ -32,6 +32,7 @@ use SP\Core\Context\SessionContext;
 use SP\Core\Events\Event;
 use SP\Core\Events\EventMessage;
 use SP\Core\SessionUtil;
+use SP\Http\JsonResponse;
 use SP\Http\Uri;
 use SP\Modules\Web\Controllers\Helpers\LayoutHelper;
 use SP\Modules\Web\Controllers\Traits\JsonTrait;
@@ -92,7 +93,7 @@ final class LoginController extends ControllerBase
 
             $this->eventDispatcher->notifyEvent('exception', new Event($e));
 
-            return $this->returnJsonResponse($e->getCode(), $e->getMessage());
+            return $this->returnJsonResponse($e->getCode() ?: JsonResponse::JSON_ERROR, $e->getMessage());
         }
     }
 

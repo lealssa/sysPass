@@ -139,7 +139,7 @@ final class LdapConnection implements LdapConnectionInterface
         $this->ldapHandler = @ldap_connect($this->getServerUri());
 
         // Conexión al servidor LDAP
-        if (!is_resource($this->ldapHandler)) {
+        if ($this->ldapHandler === false) {
             $this->eventDispatcher->notifyEvent('ldap.connect',
                 new Event($this, EventMessage::factory()
                     ->addDescription(__u('Unable to connect to LDAP server'))
@@ -293,7 +293,7 @@ final class LdapConnection implements LdapConnectionInterface
      */
     public function getErrorCode()
     {
-        if (is_resource($this->ldapHandler)) {
+        if ($this->ldapHandler !== false && $this->ldapHandler !== null) {
             return ldap_errno($this->ldapHandler);
         }
 
