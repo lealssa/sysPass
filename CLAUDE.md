@@ -15,7 +15,7 @@ sysPass 3.3.0 — PHP password manager forked from upstream tag 3.2.11.
 - All commit messages MUST be in English
 - Commit messages: short imperative style (e.g., "fix: resolve X", "feat: add Y")
 - No co-authorship line unless explicitly requested
-- Code comments may be in Spanish (original codebase) or English (new code)
+- Code comments and documentation must be in English only
 
 ## Architecture
 
