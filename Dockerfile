@@ -3,17 +3,17 @@ FROM php:8.5-apache
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libldap2-dev \
     libfreetype6-dev \
-    libjpeg62-turbo-dev \
+    libjpeg-dev \
     libpng-dev \
+    libwebp-dev \
     libzip-dev \
-    zlib1g-dev \
-    libxml2-dev \
     libicu-dev \
     gettext \
     locales \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-configure ldap \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
@@ -22,7 +22,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         gettext \
         intl \
         zip \
-        xml
+        opcache
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/syspass.ini
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
