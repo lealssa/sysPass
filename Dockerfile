@@ -21,8 +21,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
         gd \
         gettext \
         intl \
-        zip \
-        opcache
+        zip
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/syspass.ini
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
