@@ -58,7 +58,7 @@ final class Acl implements ActionsInterface
      * @param EventDispatcher  $eventDispatcher
      * @param Actions|null     $action
      */
-    public function __construct(ContextInterface $context, EventDispatcher $eventDispatcher, Actions $action = null)
+    public function __construct(ContextInterface $context, EventDispatcher $eventDispatcher, ?Actions $action = null)
     {
         $this->context = $context;
         $this->eventDispatcher = $eventDispatcher;

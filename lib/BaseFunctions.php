@@ -224,9 +224,11 @@ function _t($domain, $message, $translate = true)
  *
  * @return string
  */
-function mb_ucfirst($string)
-{
-    return mb_strtoupper(mb_substr($string, 0, 1));
+if (!function_exists('mb_ucfirst')) {
+    function mb_ucfirst($string)
+    {
+        return mb_strtoupper(mb_substr($string, 0, 1));
+    }
 }
 
 /**

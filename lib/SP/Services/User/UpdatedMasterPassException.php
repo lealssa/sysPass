@@ -41,7 +41,7 @@ final class UpdatedMasterPassException extends SPException
      * @param int       $code
      * @param Exception $previous
      */
-    public function __construct($type, $code = 0, Exception $previous = null)
+    public function __construct($type, $code = 0, ?Exception $previous = null)
     {
         parent::__construct(__u('Master password updated'), $type, __u('Please, restart the session for update it'), $code, $previous);
     }

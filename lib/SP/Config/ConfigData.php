@@ -1857,7 +1857,7 @@ final class ConfigData implements JsonSerializable
      *        which is a value of any type other than a resource.
      * @since 5.4.0
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return get_object_vars($this);
     }
@@ -2205,7 +2205,7 @@ final class ConfigData implements JsonSerializable
     /**
      * @param string $applicationUrl
      */
-    public function setApplicationUrl(string $applicationUrl = null)
+    public function setApplicationUrl(?string $applicationUrl = null)
     {
         $this->applicationUrl = $applicationUrl ? rtrim($applicationUrl, '/') : null;
     }

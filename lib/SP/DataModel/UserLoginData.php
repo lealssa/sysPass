@@ -93,7 +93,7 @@ class UserLoginData
     /**
      * @param UserLoginResponse $userLoginResponse
      */
-    public function setUserLoginResponse(UserLoginResponse $userLoginResponse = null)
+    public function setUserLoginResponse(?UserLoginResponse $userLoginResponse = null)
     {
         $this->userLoginResponse = $userLoginResponse;
     }

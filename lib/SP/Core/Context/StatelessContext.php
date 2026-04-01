@@ -60,7 +60,7 @@ final class StatelessContext extends ContextBase
      *
      * @param UserLoginResponse $userLoginResponse
      */
-    public function setUserData(UserLoginResponse $userLoginResponse = null)
+    public function setUserData(?UserLoginResponse $userLoginResponse = null)
     {
         $this->setContextKey('userData', $userLoginResponse);
     }

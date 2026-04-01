@@ -22,6 +22,8 @@
  *  along with sysPass.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+error_reporting(E_ALL & ~E_DEPRECATED);
+
 define('APP_ROOT', __DIR__);
 define('APP_MODULE', 'api');
 

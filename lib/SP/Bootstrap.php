@@ -297,7 +297,7 @@ final class Bootstrap
 
         if (!self::$checkPhpVersion) {
             throw new InitializationException(
-                sprintf(__('Required PHP version >= %s <= %s'), '7.3', '7.4'),
+                sprintf(__('Required PHP version >= %s <= %s'), '8.1', '8.5'),
                 Core\Exceptions\SPException::ERROR,
                 __u('Please update the PHP version to run sysPass')
             );
@@ -476,7 +476,7 @@ final class Bootstrap
 
                 $bs->router->dispatch($bs->request->getRequest());
                 break;
-            default;
+            default:
                 throw new InitializationException('Unknown module');
         }
     }

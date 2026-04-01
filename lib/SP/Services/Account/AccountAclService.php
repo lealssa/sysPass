@@ -105,7 +105,7 @@ final class AccountAclService extends Service
      * @throws ConstraintException
      * @throws QueryException
      */
-    public function getAcl($actionId, AccountAclDto $accountAclDto = null, $isHistory = false)
+    public function getAcl($actionId, ?AccountAclDto $accountAclDto = null, $isHistory = false)
     {
         $this->accountAcl = new AccountAcl($actionId, $isHistory);
         $this->accountAcl->setShowPermission(self::getShowPermission($this->context->getUserData(), $this->context->getUserProfile()));

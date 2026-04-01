@@ -224,7 +224,7 @@ final class FileHandler
      *
      * @throws FileException
      */
-    public function readChunked(callable $chunker = null, float $rate = null)
+    public function readChunked(?callable $chunker = null, ?float $rate = null)
     {
         $maxRate = Util::getMaxDownloadChunk() / self::CHUNK_FACTOR;
 

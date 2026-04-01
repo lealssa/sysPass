@@ -51,7 +51,7 @@ final class Event
      *
      * @throws InvalidArgumentException
      */
-    public function __construct($source, EventMessage $eventMessage = null)
+    public function __construct($source, ?EventMessage $eventMessage = null)
     {
         if (!is_object($source)) {
             throw new InvalidArgumentException(__u('An object is needed'));

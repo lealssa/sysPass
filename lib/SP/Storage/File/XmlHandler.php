@@ -247,7 +247,6 @@ final class XmlHandler implements XmlFileStorageInterface
         $Reflection = new ReflectionObject($object);
 
         foreach ($Reflection->getProperties() as $property) {
-            $property->setAccessible(true);
             $value = $property->getValue($object);
 
             if (is_bool($value)) {
@@ -258,7 +257,6 @@ final class XmlHandler implements XmlFileStorageInterface
                 $items[$property->getName()] = $value;
             }
 
-            $property->setAccessible(false);
         }
 
         ksort($items);

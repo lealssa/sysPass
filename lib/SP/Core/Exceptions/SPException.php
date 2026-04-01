@@ -59,7 +59,7 @@ class SPException extends Exception
      * @param int            $code
      * @param Exception|null $previous
      */
-    public function __construct($message, $type = self::ERROR, $hint = null, $code = 0, Exception $previous = null)
+    public function __construct($message, $type = self::ERROR, $hint = null, $code = 0, ?Exception $previous = null)
     {
         $this->type = $type;
         $this->hint = $hint;

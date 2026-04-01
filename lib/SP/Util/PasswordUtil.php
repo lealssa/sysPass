@@ -51,7 +51,7 @@ final class PasswordUtil
      *
      * @return string
      */
-    public static function randomPassword($length = 16, int $flags = null)
+    public static function randomPassword($length = 16, ?int $flags = null)
     {
         if ($flags === null) {
             $flags = self::FLAG_PASSWORD_SPECIAL | self::FLAG_PASSWORD_NUMBER | self::FLAG_PASSWORD_STRENGTH;

@@ -59,7 +59,7 @@ interface ContextInterface
      *
      * @param UserLoginResponse $userLoginResponse
      */
-    public function setUserData(UserLoginResponse $userLoginResponse = null);
+    public function setUserData(?UserLoginResponse $userLoginResponse = null);
 
     /**
      * Obtiene el objeto de perfil de usuario de la sesión.

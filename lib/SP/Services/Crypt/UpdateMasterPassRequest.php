@@ -64,7 +64,7 @@ final class UpdateMasterPassRequest
      * @param string $currentHash
      * @param Task   $task
      */
-    public function __construct($currentMasterPass, $newMasterPass, $currentHash, Task $task = null)
+    public function __construct($currentMasterPass, $newMasterPass, $currentHash, ?Task $task = null)
     {
         $this->currentMasterPass = $currentMasterPass;
         $this->newMasterPass = $newMasterPass;
