@@ -3,7 +3,7 @@
 **Data:** 2026-03-31
 **Atualizado:** 2026-03-31
 **Referência:** SECURITY_AUDIT.md (item P0-1)
-**Status:** Fases 1 a 4 concluídas. Pendente: Fase 5 (Dockerfile + virada em produção)
+**Status:** Fases 1 a 5.1 concluídas. Pendente: Fase 5.2–5.4 (virada em produção)
 **Risco geral:** Alto — requer atualização de dependências, reescrita de código removido e testes extensivos
 
 ## Ambiente Local
@@ -400,6 +400,16 @@ Após a virada estável, aplicar os outros itens do `SECURITY_AUDIT.md`:
 
 **Validação:** Todas as classes do sysPass carregam sem erros no PHP 8.5.2.
 
+### Fase 5.1 concluída em 2026-03-31
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `Dockerfile` | PHP 8.5-apache, extensões (pdo_mysql, ldap, gd, intl, zip, etc.), OPcache, Composer, healthcheck |
+| `docker/php.ini` | Config hardened: errors off, sessões seguras, OPcache, disable_functions (exec mantido para backup) |
+| `docker/apache-vhost.conf` | Vhost com bloqueio de dirs sensíveis, security headers (CSP, X-Frame-Options, nosniff) |
+| `docker-compose.yml` | App (porta 8080:80) + MariaDB 11, volumes nomeados, healthcheck |
+| `.dockerignore` | Exclui .git, tests, vendor, node_modules, docs do build |
+
 ### Pendente
 
-- **Fase 5:** Criar Dockerfile com PHP 8.5 e fazer virada em produção
+- **Fase 5.2–5.4:** Virada em produção (backup, deploy da imagem, testes, rollback se necessário)
