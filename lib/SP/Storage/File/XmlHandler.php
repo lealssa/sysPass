@@ -82,7 +82,7 @@ final class XmlHandler implements XmlFileStorageInterface
 
         $this->items = [];
         $this->setDOM();
-        $this->Dom->load($this->fileHandler->getFile());
+        $this->Dom->load($this->fileHandler->getFile(), LIBXML_NONET);
 
         $nodes = $this->Dom->getElementsByTagName($node);
 
@@ -300,7 +300,7 @@ final class XmlHandler implements XmlFileStorageInterface
         $this->fileHandler->getFileSize(true);
 
         $dom = new DOMDocument('1.0', 'utf-8');
-        $dom->load($this->fileHandler->getFile());
+        $dom->load($this->fileHandler->getFile(), LIBXML_NONET);
 
         $query = (new DOMXPath($dom))->query($path);
 

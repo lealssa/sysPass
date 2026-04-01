@@ -153,7 +153,7 @@ final class SyspassImport extends XmlImportBase implements ImportInterface
 
             $newXmlData = new DOMDocument();
 
-            if ($newXmlData->loadXML($xmlDecrypted) === false) {
+            if ($newXmlData->loadXML($xmlDecrypted, LIBXML_NONET) === false) {
                 throw new ImportException(__u('Wrong encryption password'));
             }
 

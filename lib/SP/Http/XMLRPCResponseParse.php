@@ -64,7 +64,7 @@ abstract class XMLRPCResponseParse
             $this->xml = $xml;
 
             $dom = new DOMDocument();
-            $dom->loadXML($xml);
+            $dom->loadXML($xml, LIBXML_NONET);
 
             if ($dom->getElementsByTagName('methodResponse')->length === 0) {
                 throw new DOMException(__u('Invalid XML-RPC response'));

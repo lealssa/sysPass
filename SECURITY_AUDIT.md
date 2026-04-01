@@ -24,21 +24,18 @@
 - Cache local (FileCache): `allowed_classes => true` (arquivos controlados pelo servidor)
 - `Util::unserialize()`: restrito a `$dstClass`/`$srcClass`
 
-### 3. XXE — XML External Entity Injection
+### 3. ~~XXE — XML External Entity Injection~~ ✅ RESOLVIDO
 
-Nenhuma chamada a `libxml_disable_entity_loader(true)` existe no projeto. Todos os `loadXML()` são vulneráveis:
+~~Nenhuma chamada a `libxml_disable_entity_loader(true)` existe no projeto. Todos os `loadXML()` são vulneráveis.~~
 
-| Arquivo | Linha |
-|---------|-------|
-| `lib/SP/Services/Import/XmlFileImport.php` | 76 |
-| `lib/SP/Services/Import/SyspassImport.php` | 156 |
-| `lib/SP/Http/XMLRPCResponseParse.php` | 67 |
-| `lib/SP/Storage/File/XmlHandler.php` | 103 |
-| `lib/SP/Services/Export/XmlVerifyService.php` | 100, 227, 229 |
+**Resolvido em 2026-04-01:** Flag `LIBXML_NONET` adicionada em todas as chamadas `loadXML()` e `load()`:
+- `lib/SP/Services/Import/XmlFileImport.php` — `loadXML(..., LIBXML_NONET)`
+- `lib/SP/Services/Import/SyspassImport.php` — `loadXML(..., LIBXML_NONET)`
+- `lib/SP/Http/XMLRPCResponseParse.php` — `loadXML(..., LIBXML_NONET)`
+- `lib/SP/Storage/File/XmlHandler.php` — `load(..., LIBXML_NONET)` (2 locais)
+- `lib/SP/Services/Export/XmlVerifyService.php` — `loadXML(..., LIBXML_NONET)` (2 locais)
 
-**Risco:** Leitura de arquivos arbitrários do servidor (`/etc/passwd`, configs), SSRF e DoS (billion laughs attack).
-
-**Mitigação sugerida:** Adicionar `libxml_disable_entity_loader(true)` antes de todo `loadXML()`, ou usar flags `LIBXML_NONET | LIBXML_NOENT`.
+**Nota:** No PHP 8.5, `libxml_disable_entity_loader()` foi removida e entity loading externo é desabilitado por padrão. `LIBXML_NONET` adiciona proteção contra SSRF (bloqueia acesso à rede durante parsing).
 
 ### 4. XSS — Cross-Site Scripting (Múltiplos Vetores)
 
@@ -229,7 +226,7 @@ Diretiva deprecated desde PHP 8.1.
 |-----------|------|-------|--------|
 | **P0 — Imediato** | ~~Migrar para PHP 8.1+~~ | #1 | ✅ Resolvido |
 | **P0 — Imediato** | ~~Corrigir `unserialize()` inseguro~~ | #2 | ✅ Resolvido |
-| **P0 — Imediato** | Adicionar proteção XXE | #3 | Pendente (parcialmente resolvido no PHP 8.5) |
+| **P0 — Imediato** | ~~Adicionar proteção XXE~~ | #3 | ✅ Resolvido (LIBXML_NONET em todos os parsers) |
 | **P1 — Urgente** | Escapar saída em templates (XSS) | #4 | Pendente |
 | **P1 — Urgente** | Remover fallback MD5/SHA1 | #6 | Pendente |
 | **P1 — Urgente** | ~~Atualizar dependências~~ | #7 | ✅ Parcialmente resolvido (Klein e jQuery pendentes) |

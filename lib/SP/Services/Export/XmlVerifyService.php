@@ -101,7 +101,7 @@ final class XmlVerifyService extends Service
         $this->xml->formatOutput = false;
         $this->xml->preserveWhiteSpace = false;
 
-        if ($this->xml->loadXML((new FileHandler($this->xmlFile))->read()) === false) {
+        if ($this->xml->loadXML((new FileHandler($this->xmlFile))->read(), LIBXML_NONET) === false) {
             foreach (libxml_get_errors() as $error) {
                 logger(__METHOD__ . ' - ' . $error->message);
             }
@@ -226,7 +226,7 @@ final class XmlVerifyService extends Service
             /** @var $node DOMElement */
             $xml = new DOMDocument();
 
-            if (!$xml->loadXML(Crypt::decrypt(base64_decode($node->nodeValue), $node->getAttribute('key'), $this->password))) {
+            if (!$xml->loadXML(Crypt::decrypt(base64_decode($node->nodeValue), $node->getAttribute('key'), $this->password), LIBXML_NONET)) {
                 throw new ServiceException(__u('Wrong encryption password'));
             }
 
