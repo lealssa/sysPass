@@ -3,7 +3,7 @@
 **Data:** 2026-03-31
 **Atualizado:** 2026-03-31
 **Referência:** SECURITY_AUDIT.md (item P0-1)
-**Status:** Fases 1 a 5.1 concluídas. Pendente: Fase 5.2–5.4 (virada em produção)
+**Status:** Fases 1 a 5.1 concluídas + correções de runtime. Aplicação testada e funcional no PHP 8.5.2. Pendente: Fase 5.2–5.4 (virada em produção)
 **Risco geral:** Alto — requer atualização de dependências, reescrita de código removido e testes extensivos
 
 ## Ambiente Local
@@ -410,6 +410,50 @@ Após a virada estável, aplicar os outros itens do `SECURITY_AUDIT.md`:
 | `docker-compose.yml` | App (porta 8080:80) + MariaDB 11, volumes nomeados, healthcheck |
 | `.dockerignore` | Exclui .git, tests, vendor, node_modules, docs do build |
 
+### Correções de runtime — 2026-03-31
+
+Problemas encontrados ao subir a aplicação com PHP 8.5.2 e testar instalação via browser:
+
+| Arquivo(s) | Problema | Correção |
+|------------|----------|----------|
+| `lib/BaseFunctions.php` | `mb_ucfirst()` nativa no PHP 8.4 causa redeclaração fatal | Guard `function_exists()` |
+| `lib/SP/Util/Checks.php`, `Bootstrap.php` | Version check exigia PHP 7.3–7.4 | Atualizado para 8.1–8.5 |
+| `index.php`, `api.php` | Deprecation warnings do Klein (vendor) exibidos no browser | `error_reporting(E_ALL & ~E_DEPRECATED)` |
+| `Bootstrap.php` | `default;` em switch (deprecated PHP 8.5) | Corrigido para `default:` |
+| 12 arquivos | Implicit nullable params (`Type $x = null`) deprecated PHP 8.5 | Corrigido para `?Type $x = null` |
+| `DataCollection.php` | Return types ausentes em interfaces (ArrayAccess, Countable, IteratorAggregate) | Adicionados return types |
+| `ConfigData.php` | `jsonSerialize()` sem return type | Adicionado `: mixed` |
+| `XmlHandler.php` | `setAccessible()` deprecated PHP 8.5 | Removido (no-op desde PHP 8.1) |
+| `CryptPKI.php` | Chave pública RSA em PKCS1, JSEncrypt no frontend espera PKCS8 | Formato da pubkey alterado para PKCS8 |
+| `Config.php` | `saveConfig()` falhava com "Context not initialized" na 1ª criação | Try/catch ao ler sessão |
+| `Bootstrap.php` | "Response is locked" — Klein tentava escrever em response já enviada | Guard `isLocked()` antes de continuar |
+| `IndexController.php` | Redirect sem `return` fazia Klein continuar processando | Adicionado `return` após redirect |
+
+**Resultado:** Aplicação instalada e funcional com PHP 8.5.2 + MariaDB 11 (fedora-server.local).
+
 ### Pendente
 
 - **Fase 5.2–5.4:** Virada em produção (backup, deploy da imagem, testes, rollback se necessário)
+
+---
+
+## TODO — Próximos Passos
+
+### Segurança (do SECURITY_AUDIT.md)
+
+- [ ] **P0-2:** Converter `unserialize()` com `allowed_classes` ou migrar para JSON (requer migração de BD)
+- [ ] **P0-3:** XXE — Garantir uso de `LIBXML_NONET` onde aplicável (parcialmente resolvido no PHP 8.5)
+- [ ] **P1-1:** XSS — Output encoding com `htmlspecialchars()` nos templates Smarty
+- [ ] **P1-2:** Security headers — HSTS, melhorar CSP
+- [ ] **P1-3:** Rate limiting no login
+- [ ] **P1-4:** CSRF token rotation
+- [ ] **P2:** SQL injection review, session fixation, path traversal nos uploads
+- [ ] **P3:** Logging de auditoria, 2FA, política de senhas
+
+### Modernização
+
+- [ ] Substituir Klein router por Slim 4 (elimina deprecation warnings)
+- [ ] Adicionar `declare(strict_types=1)` nos arquivos PHP
+- [ ] Type declarations (parâmetros e retornos) nos métodos públicos
+- [ ] PHPStan nível 6+ para análise estática contínua
+- [ ] CI/CD pipeline (GitHub Actions: lint, PHPStan, PHPUnit)

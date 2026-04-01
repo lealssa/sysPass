@@ -2,17 +2,17 @@
 
 **Data:** 2026-03-31
 **Escopo:** Análise estática do código-fonte, dependências e configuração
-**Status:** Pendente de mitigação
+**Status:** P0-1 resolvido (migração PHP 8.5). P0-2, P0-3 e demais pendentes.
 
 ---
 
 ## SEVERIDADE CRÍTICA
 
-### 1. PHP 7.4 End-of-Life
+### 1. ~~PHP 7.4 End-of-Life~~ ✅ RESOLVIDO
 
-O projeto requer `php ~7.4`, que está **sem suporte desde novembro de 2022**. Nenhuma correção de segurança é publicada para esta versão. Todas as vulnerabilidades abaixo são agravadas por este fato.
+~~O projeto requer `php ~7.4`, que está **sem suporte desde novembro de 2022**.~~
 
-**Arquivo:** `composer.json`
+**Resolvido em 2026-03-31:** Migrado para PHP 8.5 (composer.json `>=8.1`, platform `8.5`). Todas as dependências atualizadas. Branch `migration/php85`. Aplicação testada e funcional.
 
 ### 2. Desserialização Insegura (RCE Potencial)
 
@@ -98,30 +98,32 @@ Usuários com senhas legadas ainda autenticam via MD5/SHA1, que são criptografi
 
 **Mitigação sugerida:** Remover fallback MD5/SHA1 e forçar migração de senha (rehash com bcrypt/argon2 no próximo login).
 
-### 7. Dependências Vulneráveis
+### 7. Dependências Vulneráveis (parcialmente resolvido)
 
-| Dependência | Versão instalada | Problema |
-|------------|-----------------|----------|
-| `guzzlehttp/guzzle` | 6.5.8 | Série 6.x EOL, CVEs de SSRF |
-| `phpseclib/phpseclib` | 2.0.37 | Série 2.x, CVEs conhecidos |
-| `symfony/debug` | v3.4.47 | EOL desde 2021 |
-| `monolog/monolog` | 1.27.1 | Série 1.x EOL |
-| `klein/klein` | v2.1.2 | Sem manutenção desde 2015 |
-| jQuery (frontend) | 3.3.1 | Vulnerabilidades XSS conhecidas |
+| Dependência | Antes | Agora | Status |
+|------------|-------|-------|--------|
+| `guzzlehttp/guzzle` | 6.5.8 | ^7.9 | ✅ Resolvido |
+| `phpseclib/phpseclib` | 2.0.37 | ^3.0 | ✅ Resolvido |
+| `symfony/debug` | v3.4.47 | `symfony/error-handler ^7.0` | ✅ Resolvido |
+| `monolog/monolog` | 1.27.1 | ^3.0 | ✅ Resolvido |
+| `klein/klein` | v2.1.2 | v2.1.2 | ⚠️ Pendente — deprecation warnings suprimidos, substituição por Slim 4 planejada |
+| jQuery (frontend) | 3.3.1 | 3.3.1 | ⚠️ Pendente — atualizar para 3.7+ |
 
-**Mitigação sugerida:** Atualizar todas as dependências para versões suportadas. Considerar migração de framework de roteamento.
+**Mitigação restante:** Substituir Klein por Slim 4 e atualizar jQuery.
 
-### 8. Headers de Segurança HTTP Ausentes
+### 8. Headers de Segurança HTTP (parcialmente resolvido)
 
-**Nenhum** dos seguintes headers está configurado:
+Headers adicionados no `docker/apache-vhost.conf`:
 
-- `Content-Security-Policy`
-- `X-Frame-Options` (proteção contra clickjacking)
-- `X-Content-Type-Options`
-- `Strict-Transport-Security` (HSTS)
-- `Referrer-Policy`
+- ✅ `Content-Security-Policy` — configurado
+- ✅ `X-Frame-Options: DENY`
+- ✅ `X-Content-Type-Options: nosniff`
+- ✅ `Referrer-Policy: strict-origin-when-cross-origin`
+- ✅ `X-XSS-Protection: 1; mode=block`
+- ✅ `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- ⚠️ `Strict-Transport-Security` (HSTS) — pendente (requer HTTPS configurado)
 
-**Mitigação sugerida:** Adicionar middleware ou configuração no web server para incluir todos os headers.
+**Mitigação restante:** Adicionar HSTS quando HTTPS estiver ativo.
 
 ### 9. Geração de Tokens com Entropia Fraca
 
@@ -192,13 +194,11 @@ Os valores atualmente vêm de constantes (risco baixo), mas o padrão é insegur
 
 **Mitigação sugerida:** Usar `escapeshellarg()` em todos os argumentos passados para `exec()`.
 
-### 16. mcrypt Deprecated
+### 16. ~~mcrypt Deprecated~~ ✅ RESOLVIDO
 
-**Arquivo:** `lib/SP/Core/Crypt/OldCrypt.php`
+~~Usa funções `mcrypt_*` removidas no PHP 7.1+.~~
 
-Usa funções `mcrypt_*` removidas no PHP 7.1+. Presente como código legado para migração de dados antigos.
-
-**Mitigação sugerida:** Migrar dados cifrados com mcrypt para OpenSSL e remover o código legado.
+**Resolvido em 2026-03-31:** `OldCrypt.php` reescrito com `openssl_encrypt/decrypt` + `random_bytes()`. Nota: aes-256-cbc não é 100% compatível com mcrypt RIJNDAEL-256 para dados muito antigos.
 
 ---
 
@@ -235,23 +235,23 @@ Diretiva deprecated desde PHP 8.1.
 
 ## Priorização de Correções
 
-| Prioridade | Ação | Itens |
-|-----------|------|-------|
-| **P0 — Imediato** | Migrar para PHP 8.1+ | #1 |
-| **P0 — Imediato** | Corrigir `unserialize()` inseguro | #2 |
-| **P0 — Imediato** | Adicionar proteção XXE | #3 |
-| **P1 — Urgente** | Escapar saída em templates (XSS) | #4 |
-| **P1 — Urgente** | Remover fallback MD5/SHA1 | #6 |
-| **P1 — Urgente** | Atualizar dependências | #7 |
-| **P1 — Urgente** | Corrigir SQL injection | #5 |
-| **P2 — Importante** | Adicionar headers HTTP de segurança | #8 |
-| **P2 — Importante** | Substituir `uniqid()`/`mt_rand()` | #9 |
-| **P2 — Importante** | Implementar CSRF por requisição | #13 |
-| **P2 — Importante** | Bloquear `.git` e configs no web server | #14 |
-| **P3 — Desejável** | Substituir SHA1 por SHA256+ | #10 |
-| **P3 — Desejável** | Melhorar regeneração de session ID | #12 |
-| **P3 — Desejável** | Escapar argumentos de shell | #15 |
-| **P3 — Desejável** | Remover código mcrypt legado | #16 |
+| Prioridade | Ação | Itens | Status |
+|-----------|------|-------|--------|
+| **P0 — Imediato** | ~~Migrar para PHP 8.1+~~ | #1 | ✅ Resolvido |
+| **P0 — Imediato** | Corrigir `unserialize()` inseguro | #2 | Pendente |
+| **P0 — Imediato** | Adicionar proteção XXE | #3 | Pendente (parcialmente resolvido no PHP 8.5) |
+| **P1 — Urgente** | Escapar saída em templates (XSS) | #4 | Pendente |
+| **P1 — Urgente** | Remover fallback MD5/SHA1 | #6 | Pendente |
+| **P1 — Urgente** | ~~Atualizar dependências~~ | #7 | ✅ Parcialmente resolvido (Klein e jQuery pendentes) |
+| **P1 — Urgente** | Corrigir SQL injection | #5 | Pendente |
+| **P2 — Importante** | ~~Adicionar headers HTTP de segurança~~ | #8 | ✅ Resolvido (HSTS pendente) |
+| **P2 — Importante** | Substituir `uniqid()`/`mt_rand()` | #9 | Pendente |
+| **P2 — Importante** | Implementar CSRF por requisição | #13 | Pendente |
+| **P2 — Importante** | ~~Bloquear `.git` e configs no web server~~ | #14 | ✅ Resolvido (apache-vhost.conf) |
+| **P3 — Desejável** | Substituir SHA1 por SHA256+ | #10 | Pendente |
+| **P3 — Desejável** | Melhorar regeneração de session ID | #12 | Pendente |
+| **P3 — Desejável** | Escapar argumentos de shell | #15 | Pendente |
+| **P3 — Desejável** | ~~Remover código mcrypt legado~~ | #16 | ✅ Resolvido (OpenSSL) |
 
 ---
 
