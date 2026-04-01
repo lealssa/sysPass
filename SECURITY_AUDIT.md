@@ -14,25 +14,15 @@
 
 **Resolvido em 2026-03-31:** Migrado para PHP 8.5 (composer.json `>=8.1`, platform `8.5`). Todas as dependências atualizadas. Branch `migration/php85`. Aplicação testada e funcional.
 
-### 2. Desserialização Insegura (RCE Potencial)
+### 2. ~~Desserialização Insegura (RCE Potencial)~~ ✅ RESOLVIDO
 
-Múltiplos locais usam `unserialize()` **sem restrição de classes**, abrindo portas para Remote Code Execution via PHP gadget chains.
+~~Múltiplos locais usam `unserialize()` **sem restrição de classes**.~~
 
-| Arquivo | Linha |
-|---------|-------|
-| `lib/SP/Services/Api/ApiService.php` | 239 |
-| `lib/SP/Services/Task/TaskService.php` | 154 |
-| `lib/SP/Services/PublicLink/PublicLinkService.php` | 299 |
-| `lib/SP/Storage/File/FileCachePacked.php` | 50 |
-| `lib/SP/Storage/File/FileCache.php` | 40 |
-| `lib/SP/Util/Util.php` | 171, 191, 212 |
-| `lib/SP/DataModel/SerializedModel.php` | 57 |
-
-Apenas `lib/SP/Core/Crypt/SecureKeyCookie.php:91` usa a forma segura com `['allowed_classes' => Vault::class]`.
-
-**Risco:** Se um atacante conseguir inserir dados serializados no banco ou em arquivos, pode executar código arbitrário no servidor.
-
-**Mitigação sugerida:** Substituir `unserialize()` por `json_decode()` ou adicionar o parâmetro `['allowed_classes' => [ClasseEsperada::class]]` em todas as chamadas.
+**Resolvido em 2026-03-31:** `allowed_classes` adicionado em todas as chamadas `unserialize()`:
+- Dados do banco: restrito à classe esperada (`Vault::class`, `Task::class`, etc.)
+- Arrays puros (useInfo): `allowed_classes => false`
+- Cache local (FileCache): `allowed_classes => true` (arquivos controlados pelo servidor)
+- `Util::unserialize()`: restrito a `$dstClass`/`$srcClass`
 
 ### 3. XXE — XML External Entity Injection
 
@@ -238,7 +228,7 @@ Diretiva deprecated desde PHP 8.1.
 | Prioridade | Ação | Itens | Status |
 |-----------|------|-------|--------|
 | **P0 — Imediato** | ~~Migrar para PHP 8.1+~~ | #1 | ✅ Resolvido |
-| **P0 — Imediato** | Corrigir `unserialize()` inseguro | #2 | Pendente |
+| **P0 — Imediato** | ~~Corrigir `unserialize()` inseguro~~ | #2 | ✅ Resolvido |
 | **P0 — Imediato** | Adicionar proteção XXE | #3 | Pendente (parcialmente resolvido no PHP 8.5) |
 | **P1 — Urgente** | Escapar saída em templates (XSS) | #4 | Pendente |
 | **P1 — Urgente** | Remover fallback MD5/SHA1 | #6 | Pendente |
