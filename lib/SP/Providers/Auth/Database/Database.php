@@ -96,10 +96,10 @@ final class Database implements AuthInterface
     }
 
     /**
-     * Autentificación de usuarios con BD.
+     * Authenticate user against the database.
      *
-     * Esta función comprueba la clave del usuario. Si el usuario necesita ser migrado desde phpPMS,
-     * se ejecuta el proceso para actualizar la clave.
+     * Only modern password hashes (bcrypt/argon2) are accepted.
+     * Users with legacy MD5/SHA1 hashes (isMigrate=1) must reset their password.
      *
      * @return bool
      */
@@ -110,8 +110,10 @@ final class Database implements AuthInterface
 
             $this->userLoginData->setUserLoginResponse($userLoginResponse);
 
-            if ($userLoginResponse->getIsMigrate() && $this->checkMigrateUser($userLoginResponse)) {
-                return $this->userPassService->migrateUserPassById($userLoginResponse->getId(), $this->userLoginData->getLoginPass());
+            if ($userLoginResponse->getIsMigrate()) {
+                logger('User ' . $userLoginResponse->getLogin() . ' has legacy password hash (isMigrate=1). Password reset required.');
+
+                return false;
             }
 
             return Hash::checkHashKey($this->userLoginData->getLoginPass(), $userLoginResponse->getPass());
@@ -120,18 +122,5 @@ final class Database implements AuthInterface
         }
 
         return false;
-    }
-
-    /**
-     * @param UserLoginResponse $userLoginResponse
-     *
-     * @return bool
-     */
-    protected function checkMigrateUser(UserLoginResponse $userLoginResponse)
-    {
-        return ($userLoginResponse->getPass() === sha1($userLoginResponse->getHashSalt() . $this->userLoginData->getLoginPass())
-            || $userLoginResponse->getPass() === md5($this->userLoginData->getLoginPass())
-            || hash_equals($userLoginResponse->getPass(), crypt($this->userLoginData->getLoginPass(), $userLoginResponse->getHashSalt()))
-            || Hash::checkHashKey($this->userLoginData->getLoginPass(), $userLoginResponse->getPass()));
     }
 }

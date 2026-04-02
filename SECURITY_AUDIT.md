@@ -64,20 +64,11 @@
 
 ## SEVERIDADE ALTA
 
-### 6. Autenticação com Fallback MD5/SHA1
+### 6. ~~Autenticação com Fallback MD5/SHA1~~ ✅ RESOLVIDO
 
-**Arquivo:** `lib/SP/Providers/Auth/Database/Database.php:132-134`
+~~Usuários com senhas legadas autenticavam via MD5/SHA1, que são criptograficamente quebrados.~~
 
-```php
-return ($userLoginResponse->getPass() === sha1($salt . $pass)
-    || $userLoginResponse->getPass() === md5($pass)
-    || hash_equals(..., crypt($salt, $salt))
-    || Hash::checkHashKey($pass, $hash));
-```
-
-Usuários com senhas legadas ainda autenticam via MD5/SHA1, que são criptograficamente quebrados.
-
-**Mitigação sugerida:** Remover fallback MD5/SHA1 e forçar migração de senha (rehash com bcrypt/argon2 no próximo login).
+**Resolvido em 2026-04-02:** Método `checkMigrateUser()` removido de `lib/SP/Providers/Auth/Database/Database.php`. Fallbacks MD5, SHA1 e `crypt()` eliminados. Somente `Hash::checkHashKey()` (bcrypt/argon2) é aceito. Usuários com flag `isMigrate=1` (hash legado) são rejeitados com log e precisam redefinir a senha.
 
 ### 7. Dependências Vulneráveis (parcialmente resolvido)
 
@@ -222,7 +213,7 @@ Diretiva deprecated desde PHP 8.1.
 | **P0 — Imediato** | ~~Corrigir `unserialize()` inseguro~~ | #2 | ✅ Resolvido |
 | **P0 — Imediato** | ~~Adicionar proteção XXE~~ | #3 | ✅ Resolvido (LIBXML_NONET em todos os parsers) |
 | **P1 — Urgente** | ~~Escapar saída em templates (XSS)~~ | #4 | ✅ Resolvido |
-| **P1 — Urgente** | Remover fallback MD5/SHA1 | #6 | Pendente |
+| **P1 — Urgente** | ~~Remover fallback MD5/SHA1~~ | #6 | ✅ Resolvido |
 | **P1 — Urgente** | ~~Atualizar dependências~~ | #7 | ✅ Parcialmente resolvido (Klein e jQuery pendentes) |
 | **P1 — Urgente** | ~~Corrigir SQL injection~~ | #5 | ✅ Resolvido (whitelist + prepared statements + regex) |
 | **P2 — Importante** | ~~Adicionar headers HTTP de segurança~~ | #8 | ✅ Resolvido (HSTS pendente) |
