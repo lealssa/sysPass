@@ -38,6 +38,7 @@ if (!isset($data)) {
                     if ($rowSrc['truncate'] === true):
                         $value = Html::truncate($value, 150 / $numFields);
                     endif;
+                    $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
                 else:
                     $value = '&nbsp;';
                 endif;
@@ -87,7 +88,7 @@ if (!isset($data)) {
                                    data-item-id="<?php echo $itemId; ?>"
                                    data-onclick="<?php echo $action->getOnClick(); ?>"
                                     <?php foreach ($nodeData as $dataName => $dataValue):
-                                        echo 'data-', $dataName, '=', '"', $dataValue, '"';
+                                        echo 'data-', htmlspecialchars($dataName, ENT_QUOTES, 'UTF-8'), '=', '"', htmlspecialchars($dataValue, ENT_QUOTES, 'UTF-8'), '"';
                                     endforeach; ?>><?php echo $action->getIcon()->getIcon(); ?></i>
                                 <span
                                         for="<?php echo $actionUid; ?>"

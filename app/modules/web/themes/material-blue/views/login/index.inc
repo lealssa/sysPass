@@ -65,14 +65,14 @@ use SP\Mvc\View\Template;
 
                 <?php if ($_getvar('from') && $_getvar('from_hash')): ?>
                     <input type="hidden" name="from"
-                           value="<?php echo $_getvar('from'); ?>"/>
+                           value="<?php echo htmlspecialchars($_getvar('from'), ENT_QUOTES, 'UTF-8'); ?>"/>
                     <input type="hidden" name="h"
-                           value="<?php echo $_getvar('from_hash'); ?>"/>
+                           value="<?php echo htmlspecialchars($_getvar('from_hash'), ENT_QUOTES, 'UTF-8'); ?>"/>
                 <?php endif; ?>
 
                 <input type="hidden" name="login" value="1"/>
                 <input type="hidden" name="isAjax" value="1"/>
-                <input type="hidden" name="sk" value="<?php echo $sk; ?>">
+                <input type="hidden" name="sk" value="<?php echo htmlspecialchars($sk, ENT_QUOTES, 'UTF-8'); ?>">
             </fieldset>
             <div id="box-buttons">
                 <button id="btnLogin" type="submit" form="frmLogin"

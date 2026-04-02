@@ -37,22 +37,17 @@
 
 **Nota:** No PHP 8.5, `libxml_disable_entity_loader()` foi removida e entity loading externo é desabilitado por padrão. `LIBXML_NONET` adiciona proteção contra SSRF (bloqueia acesso à rede durante parsing).
 
-### 4. XSS — Cross-Site Scripting (Múltiplos Vetores)
+### 4. ~~XSS — Cross-Site Scripting (Múltiplos Vetores)~~ ✅ RESOLVIDO
 
-Saída de variáveis sem `htmlspecialchars()` em templates:
+~~Saída de variáveis sem `htmlspecialchars()` em templates.~~
 
-| Arquivo | Linhas | Vetor |
-|---------|--------|-------|
-| `views/login/index.inc` | 68, 70 | `$_getvar('from')` e `from_hash` em atributos `value=""` |
-| `views/account/viewpass.inc` | 17, 27, 45 | Header, login e password sem escape |
-| `views/account/actions.inc` | 25-26, 46-47 | Data attributes montados sem escape |
-| `views/grid/datagrid-rows.inc` | 45 | `<td><?php echo $value; ?></td>` — dados do BD direto |
-| `views/grid/datatabs-grid.inc` | 22, 29 | `$_getvar()` em `data-*` attributes |
-| `views/account/files.inc` | 20-34 | Múltiplos atributos sem escape |
-
-**Risco:** Injeção de JavaScript malicioso no navegador de usuários autenticados, potencialmente roubando sessões ou senhas exibidas.
-
-**Mitigação sugerida:** Escapar toda saída de variáveis em templates com `htmlspecialchars($value, ENT_QUOTES, 'UTF-8')`.
+**Resolvido em 2026-04-01:** `htmlspecialchars($value, ENT_QUOTES, 'UTF-8')` adicionado em todos os vetores identificados:
+- `views/login/index.inc` — `from`, `from_hash` e `$sk` escapados em atributos `value=""`
+- `views/account/viewpass.inc` — header, login e password escapados (texto e base64)
+- `views/account/actions.inc` — data attributes e attributes loops escapados (`$key`/`$value`)
+- `views/grid/datagrid-rows.inc` — `$value` em células e data attributes escapados
+- `views/grid/datatabs-grid.inc` — `tabsRoute` escapado, `$data->getTitle()` protegido com `json_encode()` em contexto JS
+- `views/account/files.inc` — todos os `$_getvar()` em data attributes escapados, IDs numéricos com cast `(int)`
 
 ### 5. ~~SQL Injection — Interpolação de String em Query~~ ✅ RESOLVIDO
 
@@ -226,7 +221,7 @@ Diretiva deprecated desde PHP 8.1.
 | **P0 — Imediato** | ~~Migrar para PHP 8.1+~~ | #1 | ✅ Resolvido |
 | **P0 — Imediato** | ~~Corrigir `unserialize()` inseguro~~ | #2 | ✅ Resolvido |
 | **P0 — Imediato** | ~~Adicionar proteção XXE~~ | #3 | ✅ Resolvido (LIBXML_NONET em todos os parsers) |
-| **P1 — Urgente** | Escapar saída em templates (XSS) | #4 | Pendente |
+| **P1 — Urgente** | ~~Escapar saída em templates (XSS)~~ | #4 | ✅ Resolvido |
 | **P1 — Urgente** | Remover fallback MD5/SHA1 | #6 | Pendente |
 | **P1 — Urgente** | ~~Atualizar dependências~~ | #7 | ✅ Parcialmente resolvido (Klein e jQuery pendentes) |
 | **P1 — Urgente** | ~~Corrigir SQL injection~~ | #5 | ✅ Resolvido (whitelist + prepared statements + regex) |
