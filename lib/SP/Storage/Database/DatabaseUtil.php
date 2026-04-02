@@ -93,19 +93,20 @@ final class DatabaseUtil
     public function checkDatabaseTables($dbName)
     {
         try {
-            $tables = implode(',', array_map(function ($value) {
-                return '\'' . $value . '\'';
-            }, self::$tables));
+            $conn = $this->DBStorage->getConnection();
+            $placeholders = implode(',', array_fill(0, count(self::$tables), '?'));
 
-            $query = /** @lang SQL */
-                'SELECT COUNT(*) 
+            $stmt = $conn->prepare(
+                'SELECT COUNT(*)
                 FROM information_schema.tables
-                WHERE table_schema = \'' . $dbName . '\'
-                AND `table_name` IN (' . $tables . ')';
+                WHERE table_schema = ?
+                AND `table_name` IN (' . $placeholders . ')'
+            );
 
-            $numTables = (int)$this->DBStorage->getConnection()->query($query)->fetchColumn();
+            $params = array_merge([$dbName], self::$tables);
+            $stmt->execute($params);
 
-            return $numTables === count(self::$tables);
+            return (int)$stmt->fetchColumn() === count(self::$tables);
         } catch (Exception $e) {
             processException($e);
         }

@@ -155,11 +155,11 @@ final class Installer extends Service
                 __u('Application database name. eg. syspass'));
         }
 
-        if (substr_count($this->installData->getDbName(), '.') >= 1) {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $this->installData->getDbName())) {
             throw new InvalidArgumentException(
-                __u('Database name cannot contain "."'),
+                __u('Database name contains invalid characters'),
                 SPException::CRITICAL,
-                __u('Please, remove dots in database name'));
+                __u('Only letters, numbers and underscores are allowed'));
         }
 
         if (empty($this->installData->getDbHost())) {

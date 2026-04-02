@@ -400,7 +400,11 @@ final class Database implements DatabaseInterface
      */
     public function getColumnsForTable($table): array
     {
-        $conn = $this->dbHandler->getConnection()->query("SELECT * FROM $table LIMIT 0");
+        if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $table)) {
+            throw new QueryException('Invalid table name');
+        }
+
+        $conn = $this->dbHandler->getConnection()->query("SELECT * FROM `{$table}` LIMIT 0");
         $columns = [];
 
         for ($i = 0; $i < $conn->columnCount(); $i++) {

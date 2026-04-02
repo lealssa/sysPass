@@ -241,6 +241,12 @@ final class FileBackupService extends Service
             $resTables = is_array($tables) ? $tables : explode(',', $tables);
         }
 
+        // Validate all table names against the known whitelist
+        $allowedTables = DatabaseUtil::$tables;
+        $resTables = array_filter($resTables, function ($table) use ($allowedTables) {
+            return in_array($table, $allowedTables, true);
+        });
+
         $lineSeparator = PHP_EOL . PHP_EOL;
 
         $dbname = $db->getDbHandler()->getDatabaseName();
@@ -264,7 +270,7 @@ final class FileBackupService extends Service
         foreach ($resTables as $table) {
             $tableName = is_object($table) ? $table->{'Tables_in_' . $dbname} : $table;
 
-            $queryData->setQuery('SHOW CREATE TABLE ' . $tableName);
+            $queryData->setQuery('SHOW CREATE TABLE `' . $tableName . '`');
 
             // Consulta para crear la tabla
             $txtCreate = $db->doQuery($queryData)->getData();

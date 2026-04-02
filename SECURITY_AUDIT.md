@@ -54,17 +54,16 @@ Saída de variáveis sem `htmlspecialchars()` em templates:
 
 **Mitigação sugerida:** Escapar toda saída de variáveis em templates com `htmlspecialchars($value, ENT_QUOTES, 'UTF-8')`.
 
-### 5. SQL Injection — Interpolação de String em Query
+### 5. ~~SQL Injection — Interpolação de String em Query~~ ✅ RESOLVIDO
 
-| Arquivo | Linha | Problema |
-|---------|-------|----------|
-| `lib/SP/Storage/Database/Database.php` | 403 | `"SELECT * FROM $table LIMIT 0"` — variável direto na query |
-| `lib/SP/Services/Backup/FileBackupService.php` | 267, 301 | `'SHOW CREATE TABLE ' . $tableName` — concatenação |
-| `lib/SP/Services/Install/MySQL.php` | 310, 313-315, 344 | `sprintf` com nomes de banco/tabela sem `PDO::quote()` |
+~~Variáveis interpoladas diretamente em queries SQL.~~
 
-**Nota:** A maioria dos repositórios usa prepared statements corretamente, mas estes pontos são exceções perigosas.
-
-**Mitigação sugerida:** Validar nomes de tabela contra whitelist ou usar `PDO::quote()` para identificadores.
+**Resolvido em 2026-04-02:**
+- `Database.php`: Adicionada validação regex de nome de tabela + backtick quoting
+- `FileBackupService.php`: Whitelist de tabelas (`DatabaseUtil::$tables`) + backtick quoting no `SHOW CREATE TABLE`
+- `DatabaseUtil.php`: `checkDatabaseTables()` reescrito com prepared statements (placeholders `?`)
+- `Installer.php`: Validação de `dbName` com regex `^[a-zA-Z0-9_]+$` (substitui checagem apenas de `.`)
+- `MySQL.php`: Nomes de banco/tabela vêm de input validado pelo Installer ou da whitelist `DatabaseUtil::$tables`; identificadores protegidos com backticks
 
 ---
 
@@ -230,7 +229,7 @@ Diretiva deprecated desde PHP 8.1.
 | **P1 — Urgente** | Escapar saída em templates (XSS) | #4 | Pendente |
 | **P1 — Urgente** | Remover fallback MD5/SHA1 | #6 | Pendente |
 | **P1 — Urgente** | ~~Atualizar dependências~~ | #7 | ✅ Parcialmente resolvido (Klein e jQuery pendentes) |
-| **P1 — Urgente** | Corrigir SQL injection | #5 | Pendente |
+| **P1 — Urgente** | ~~Corrigir SQL injection~~ | #5 | ✅ Resolvido (whitelist + prepared statements + regex) |
 | **P2 — Importante** | ~~Adicionar headers HTTP de segurança~~ | #8 | ✅ Resolvido (HSTS pendente) |
 | **P2 — Importante** | Substituir `uniqid()`/`mt_rand()` | #9 | Pendente |
 | **P2 — Importante** | Implementar CSRF por requisição | #13 | Pendente |
